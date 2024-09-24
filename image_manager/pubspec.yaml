@@ -36,13 +36,13 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.6
-  file_picker: ^5.2.0  # 使用最新版本
+  cupertino_icons: ^1.0.6 # ios图标
+  file_picker: ^5.2.0  # 文件选择插件
   photo_view: ^0.14.0  # 用于图片预览
   exif: ^2.0.1 # 拍摄照片信息
-  path: ^1.8.0
-  flutter_riverpod: ^2.0.0  # 
-  shared_preferences: ^2.0.0
+  path: ^1.8.0 # 路径工具
+  flutter_riverpod: ^2.0.0  # 状态管理工具
+  shared_preferences: ^2.0.0 # 数据持久化工具
 
 dev_dependencies:
   flutter_test:
