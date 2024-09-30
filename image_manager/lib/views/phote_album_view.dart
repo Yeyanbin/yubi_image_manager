@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_manager/album_preview_screen.dart';
+import 'package:image_manager/screens/album_preview_screen.dart';
 import 'package:image_manager/components/image_card.dart';
 import 'package:image_manager/provider/image_provider.dart';
 import 'package:image_manager/provider/setting_provider.dart';

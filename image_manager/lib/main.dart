@@ -1,7 +1,6 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_manager/image_manager_screen.dart';
+import 'package:image_manager/screens/image_manager_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

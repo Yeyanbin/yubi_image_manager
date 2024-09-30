@@ -96,7 +96,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final settingDataState = ref.watch(settingDataProvider);
     final settingData = settingDataState.settingData;
     final isLoading = settingDataState.isLoading;
+    final historyList = ref.watch(settingDataProvider).settingData.historyList;
+
     print('setting data: ${settingData.toString()}; isLoading $isLoading');
+    print('setting $historyList');
 
     return SingleChildScrollView(
         scrollDirection: Axis.vertical,

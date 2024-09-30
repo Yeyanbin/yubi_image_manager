@@ -8,7 +8,6 @@ import 'package:image_manager/utils/setting_data_storage.dart';
 Future<SettingDataModel> fetchSettingData() async {
   // return await 
   return await SettingDataStorage().getSettingDataByCache();
-  // return '';
 }
 
 // 创建一个 FutureProvider 来包装异步函数
@@ -33,7 +32,7 @@ class SettingDataState {
 // // StateNotifier 用来管理同步和异步状态
 class SettingDataStateNotifier extends StateNotifier<SettingDataState> {
   SettingDataStateNotifier() : super(
-    SettingDataState(settingData: SettingDataModel())
+    SettingDataState(settingData: SettingDataModel(historyList: []))
   ) {
     fetchDataAsync();
   }
@@ -73,6 +72,7 @@ class SettingDataStateNotifier extends StateNotifier<SettingDataState> {
     AlbumMinTimeOptionsMap? albumMinTimeOption,
     AlbumSortOptionsMap? albumSortOption,
     GridImageNumOptionsMap? gridImageNumOption,
+    List<String>? historyList
   }) {
     state = SettingDataState(
       settingData: state.settingData.copyWith(
@@ -80,6 +80,7 @@ class SettingDataStateNotifier extends StateNotifier<SettingDataState> {
         albumMinTimeOption: albumMinTimeOption,
         albumSortOption: albumSortOption,
         gridImageNumOption: gridImageNumOption,
+        historyList: historyList
       ),
       isLoading: false,
     );

@@ -1,8 +1,5 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:image_manager/utils/util.dart';
-
 
 // class MyApp extends StatefulWidget {
 //   @override
@@ -12,11 +9,11 @@ import 'package:image_manager/utils/util.dart';
 class ProgressDialog extends StatefulWidget {
   ProgressController updateProgreeController;
   void Function() initCallBack;
-  
-  ProgressDialog({super.key, 
-    required this.updateProgreeController,
-    required this.initCallBack
-  });
+
+  ProgressDialog(
+      {super.key,
+      required this.updateProgreeController,
+      required this.initCallBack});
 
   @override
   _ProgressDialogState createState() => _ProgressDialogState();
@@ -26,7 +23,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
   late bool _value;
   double _progress = 0.0;
   String _progressName = '';
-    @override
+  @override
   void initState() {
     super.initState();
     print('_ProgressDialogState initState');
@@ -51,31 +48,36 @@ class _ProgressDialogState extends State<ProgressDialog> {
 
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('进度条'),
-      content: SizedBox(
-        height: 200,
-        width: 500,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('$_progressName'),
-              Text('Progress: ${YubiUtil.formatPercentage(_progress)}'),
-              SizedBox(height: 20),
-              ProgressManager.buildProgressBar(_progress),
-              SizedBox(height: 20),
-              // ElevatedButton(
-              //   onPressed: _updateProgress,
-              //   child: const Text('Increase Progress'),
-              // ),
-            ],
+        title: Text('进度条'),
+        content: SizedBox(
+          height: 200,
+          width: 500,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              // mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('$_progressName'),
+                Text('Progress: ${YubiUtil.formatPercentage(_progress)}'),
+                SizedBox(height: 20),
+                ProgressManager.buildProgressBar(_progress),
+                SizedBox(height: 20),
+                // ElevatedButton(
+                //   onPressed: _updateProgress,
+                //   child: const Text('Increase Progress'),
+                // ),
+              ],
+            ),
           ),
         ),
-      ),
-      actions: [TextButton(onPressed: () {
-        Navigator.of(context).pop();
-      }, child: Text('隐藏弹窗'))]);
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('隐藏弹窗'))
+        ]
+      );
   }
 }
 
@@ -89,7 +91,6 @@ class ProgressManager {
     );
   }
 }
-
 
 class ProgressController {
   void Function(double, String)? _onEventTriggered;

@@ -10,7 +10,7 @@ class SettingDataStorage {
   // 私有构造函数，用于初始化单例
   SettingDataStorage._internal() {
     print('SettingDataStorage is being initialized.');
-    _settingData = SettingDataModel(); // 执行初始化逻辑
+    _settingData = SettingDataModel(historyList: []); // 执行初始化逻辑
     _cacheManager = CacheManager();
   }
 
@@ -34,11 +34,12 @@ class SettingDataStorage {
       // 
       return SettingDataModel.fromJson(data);
     } else {
-      return SettingDataModel();
+      return SettingDataModel(historyList: []);
     }
   }
 
   Future<void> saveSettingDataByCache(SettingDataModel settingData) async {
+    print('saveSettingDataByCache historyList：${settingData.historyList}');
     _cacheManager.saveData(key, jsonEncode(settingData.toJson()));
   }
 }
@@ -49,6 +50,7 @@ class SettingDataModel {
   AlbumMinTimeOptionsMap albumMinTimeOption;
   AlbumSortOptionsMap albumSortOption;
   GridImageNumOptionsMap gridImageNumOption;
+  List<String> historyList;
 
 
 
@@ -56,18 +58,30 @@ class SettingDataModel {
     this.albumOutputOption =  AlbumOutputOptionsMap.onlyStar,
     this.albumMinTimeOption = AlbumMinTimeOptionsMap.onlyDate,
     this.albumSortOption = AlbumSortOptionsMap.create,
-    this.gridImageNumOption = GridImageNumOptionsMap.four
+    this.gridImageNumOption = GridImageNumOptionsMap.four,
+    required this.historyList
   });
 
     // 从 JSON 构造 SettingDataModel 对象
   factory SettingDataModel.fromJson(Map<String, dynamic> json) {
     print('AlbumMinTimeOptionsMap.values ${AlbumMinTimeOptionsMap.values} SettingKeysMap.albumMinTimeOptionKey.name ${SettingKeysMap.albumMinTimeOption.name} ${json[SettingKeysMap.albumMinTimeOption.name]}');
     print('json ${json} ${json.keys}');
+    var _historyList = json['historyList'];
+
+    if (_historyList == null){
+      _historyList = <String>[];
+    }else if (_historyList is List) {
+      _historyList = List<String>.from(_historyList);
+    } else if (_historyList is String  && (_historyList.isEmpty || _historyList == '[]')) {
+      _historyList = <String>[];
+    } 
+
     return SettingDataModel(
       albumMinTimeOption: AlbumMinTimeOptionsMap.values.firstWhere((e) => e.name == json[SettingKeysMap.albumMinTimeOption.name]),
       albumOutputOption: AlbumOutputOptionsMap.values.firstWhere((e) => e.name == json[SettingKeysMap.albumOutputOption.name] as String),
       albumSortOption: AlbumSortOptionsMap.values.firstWhere((e) => e.name == json[SettingKeysMap.albumSortOption.name] as String),
-      gridImageNumOption: GridImageNumOptionsMap.values.firstWhere((e) => e.name == json[SettingKeysMap.gridImageNumOption.name] as String)
+      gridImageNumOption: GridImageNumOptionsMap.values.firstWhere((e) => e.name == json[SettingKeysMap.gridImageNumOption.name] as String),
+      historyList: _historyList
     );
   }
 
@@ -86,6 +100,7 @@ class SettingDataModel {
       'albumMinTimeOption': albumMinTimeOption.name,
       'albumSortOption': albumSortOption.name,
       'gridImageNumOption': gridImageNumOption.name,
+      'historyList': historyList
     };
   }
 
@@ -96,6 +111,7 @@ class SettingDataModel {
     AlbumMinTimeOptionsMap? albumMinTimeOption,
     AlbumSortOptionsMap? albumSortOption,
     GridImageNumOptionsMap? gridImageNumOption,
+    List<String>? historyList
   }) {
     print('copyWith done');
     return SettingDataModel(
@@ -103,6 +119,7 @@ class SettingDataModel {
       albumMinTimeOption: albumMinTimeOption ?? this.albumMinTimeOption,
       albumSortOption: albumSortOption ?? this.albumSortOption,
       gridImageNumOption: gridImageNumOption ?? this.gridImageNumOption,
+      historyList: historyList ?? this.historyList
     );
   }
 }

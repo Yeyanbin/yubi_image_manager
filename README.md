@@ -9,7 +9,7 @@
 
 # yubi_image_manager
 
-目前仅支持Mac端
+目前仅支持Mac端，不知道取什么名字好呢
 
 ## 运行
 
@@ -43,9 +43,9 @@ flutter run
 
 - [演示视频一](https://www.bilibili.com/video/BV1LTxxesEkY/) 选择文件夹，关闭文件夹，查看图片，新增相册，收藏，设置封面
 - [演示视频二](https://www.bilibili.com/video/BV1e3xxeQEku/) 图片收藏标识，收藏图片后按相册导出
-
 - [演示视频三](https://www.bilibili.com/video/BV1V3xxeQE2M/) 设置页响应式布局，创建相册，修改相册
 
 
 ### v1.1
-    新增历史文件夹卡片列表，设置页新增清除历史文件夹按钮。【感觉国庆可以搞定】
+
+- [演示视频](https://www.bilibili.com/video/BV1nCxteBEXz/) 新增文件夹历史卡片，整理了一下目录结构
