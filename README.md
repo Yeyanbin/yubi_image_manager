@@ -41,9 +41,11 @@ flutter run
 
 大致功能完成。
 
-<video width="320" height="240" controls>
-  <source src="/演示视频/1. 选择文件夹，关闭文件夹，查看图片，新增相册，收藏，设置封面.mp4" type="video/mp4">
-</video>
+- [演示视频一](https://www.bilibili.com/video/BV1LTxxesEkY/) 选择文件夹，关闭文件夹，查看图片，新增相册，收藏，设置封面
+- [演示视频二](https://www.bilibili.com/video/BV1e3xxeQEku/) 图片收藏标识，收藏图片后按相册导出
+
+- [演示视频三](https://www.bilibili.com/video/BV1V3xxeQE2M/) 设置页响应式布局，创建相册，修改相册
+
 
 ### v1.1
     新增历史文件夹卡片列表，设置页新增清除历史文件夹按钮。【感觉国庆可以搞定】
