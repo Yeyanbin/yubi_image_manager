@@ -34,3 +34,16 @@ flutter run
   flutter_riverpod: ^2.0.0  # 状态管理工具
   shared_preferences: ^2.0.0 # 数据持久化工具
 ```
+
+## 版本
+
+### v1.0
+
+大致功能完成。
+
+<video width="320" height="240" controls>
+  <source src="/演示视频/1. 选择文件夹，关闭文件夹，查看图片，新增相册，收藏，设置封面.mp4" type="video/mp4">
+</video>
+
+### v1.1
+    新增历史文件夹卡片列表，设置页新增清除历史文件夹按钮。【感觉国庆可以搞定】
