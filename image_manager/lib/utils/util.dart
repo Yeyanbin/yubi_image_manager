@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_manager/components/progress_dialog.dart';
 import 'package:image_manager/provider/image_provider.dart';
 import 'package:image_manager/utils/emuns.dart';
 import 'package:path/path.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // 
 List<File> getFilesWithinTimeRange(List<File> files, DateTime startTime, DateTime endTime) {
@@ -40,6 +43,7 @@ String dateRangeStr(PickDateObject startDate, PickDateObject endDate) {
 class YubiUtil {
   // 私有构造函数，防止被实例化
   YubiUtil._();
+  static String OUTPUT_THUMB_DIRPATH = '_thumbData';
 
   static Set<String> handleStarFiles(List<String> fileNames) {
     return Set<String>.from(fileNames);
@@ -107,6 +111,18 @@ class YubiUtil {
     return '${(value * 100).toStringAsFixed(1)}%';
   }
 
+  static void showProgressDialog(context, initCallBack, ProgressController progressController) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ProgressDialog(
+          updateProgreeController: progressController,
+          initCallBack: initCallBack,
+        );
+      },
+    );
+  }
+
   static void outputAlbum(void Function(double, String) updateProgress, List<AlbumItem> albumList, AlbumOutputOptionsMap albumOutputOption, String outputPath) async {
     // 首先要判断是否只用筛选已收藏
     // 然后筛选需要导出的相册
@@ -152,6 +168,93 @@ class YubiUtil {
     }
     updateProgress(1, '导出完成！');
   }
+
+
+  static Future<List<File>> getThumbImages(ProgressController progressController, List<File> imageFiles, String folderPath, [List<File>? inputThumbImages]) async {
+    final subsIndex = folderPath.length;
+    final List<File> thumbImages = inputThumbImages ?? [];
+    final len = imageFiles.length;
+    var count = 0;
+    final updateProgress = progressController.triggerUpdateProgressEvent;
+    print('getThumbImages 图片数量${imageFiles.length} folderPath: $folderPath');
+
+    
+
+    for (var i = thumbImages.length; i < len; i++) {
+      if (progressController.getProgressCloseState!()) {
+        return thumbImages;
+      }
+      
+      final dirPath = '$folderPath/$OUTPUT_THUMB_DIRPATH';
+
+      final imageFile = imageFiles[i];
+
+      final outputFilePath = '$dirPath/${imageFile.path.substring(subsIndex)}';
+      final thumbFile = File(outputFilePath);
+      // final Directory dir = Directory(outputFilePath);
+      print('getThumbImages file path ${outputFilePath} ${imageFile.path}');
+
+      if (await thumbFile.exists()) {
+        // 文件已存在。
+        thumbImages.add(thumbFile);
+        updateProgress(i / len, '正在处理缓存文件 $i / $len');
+      } else {
+        await createFolder(thumbFile.parent.path);
+
+        final result = await FlutterImageCompress.compressAndGetFile(
+          imageFile.path,
+          thumbFile.path,
+          quality: 95,  // 设置图片质量
+          minWidth: 300,  // 设置缩略图宽度
+          minHeight: 300,  // 设置缩略图高度
+        );
+        if (result != null) {
+          thumbImages.add(File(result.path));
+          updateProgress(i / len, '正在处理缓存文件 $i / $len');
+        }
+      }
+    }
+    // print('');
+    updateProgress(1, '成功获取缓存文件 $len 个');
+    return thumbImages;
+  }
+
+
+  // 请求权限
+  static Future<void> requestPhotoLibraryPermission(void Function() successCallback,void Function() rejectCallback) async {
+    // final status = await Permission.photos.request();
+    // if (status.isGranted) {
+    //   // 权限被授予，执行相关操作
+    //   successCallback();
+    // } else if (status.isDenied) {
+    //   // 权限被拒绝，提示用户
+    //   rejectCallback();
+    // } else if (status.isPermanentlyDenied) {
+    //   // 权限被永久拒绝，建议用户去设置中手动授权
+    //   openAppSettings();
+    // }
+    successCallback();
+  }
+
+
+
+  static Future<void> clearThumbImages(String folderPath) async {
+    final dirPath = '$folderPath/$OUTPUT_THUMB_DIRPATH';
+    // OUTPUT_THUMB_DIRPATH
+    final directory = Directory(dirPath);
+      try {
+        if (await directory.exists()) {
+          // 删除文件夹及其内容
+          await directory.delete(recursive: true);
+          print('文件夹删除成功');
+        } else {
+          print('文件夹不存在');
+        }
+      } catch (e) {
+        print('删除文件夹时出错: $e');
+      }
+  }
+
   static Future<void> createFolder(String path) async {
     final Directory dir = Directory(path);
 

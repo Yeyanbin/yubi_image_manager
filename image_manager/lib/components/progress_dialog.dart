@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_manager/utils/util.dart';
 
@@ -9,11 +11,18 @@ import 'package:image_manager/utils/util.dart';
 class ProgressDialog extends StatefulWidget {
   ProgressController updateProgreeController;
   void Function() initCallBack;
+  bool isShowClose;
+  String closeBtnText;
+  void Function()? closeCallback;
 
   ProgressDialog(
       {super.key,
       required this.updateProgreeController,
-      required this.initCallBack});
+      required this.initCallBack,
+      this.isShowClose = true,
+      this.closeBtnText = '隐藏弹窗',
+      this.closeCallback
+    });
 
   @override
   _ProgressDialogState createState() => _ProgressDialogState();
@@ -23,27 +32,45 @@ class _ProgressDialogState extends State<ProgressDialog> {
   late bool _value;
   double _progress = 0.0;
   String _progressName = '';
+  bool isFinish = false;
+
+  Debouncer debouncer = Debouncer(delay: Duration(milliseconds: 500));
   @override
   void initState() {
     super.initState();
     print('_ProgressDialogState initState');
     // 将组件内部的函数分配给控制器
     widget.updateProgreeController._onEventTriggered = _updateProgress;
+    widget.updateProgreeController.getProgressCloseState = getIsFinish;
+
+    // widget.updateProgreeController.bindEvent(_updateProgress); 也可以
     widget.initCallBack();
   }
 
-  // void _updateProgress() {
-  //   print('Internal function called via CustomController!');
-  // }
-
   void _updateProgress(double newProgress, String progressName) {
-    setState(() {
-      _progress = newProgress;
-      _progressName = progressName;
-      // if (_progress > 1.0) {
-      //   _progress = 0.0; // 重置进度条
-      // }
-    });
+
+    if (_progress > 1.0) {
+      debouncer.finish();
+      setState(() {
+        _progress = newProgress;
+        _progressName = progressName;
+      });
+    } else {
+      debouncer.run(() {
+        print('_updateProgress $newProgress');
+        setState(() {
+          _progress = newProgress;
+          _progressName = progressName;
+          // if (_progress > 1.0) {
+          //   _progress = 0.0; // 重置进度条
+          // }
+        });
+      });
+    }
+  }
+
+  bool getIsFinish() {
+    return isFinish;
   }
 
   Widget build(BuildContext context) {
@@ -72,10 +99,15 @@ class _ProgressDialogState extends State<ProgressDialog> {
         ),
         actions: [
           TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('隐藏弹窗'))
+            onPressed: () {
+              debouncer.finish();
+              Navigator.of(context).pop();
+              isFinish = true;
+              if (widget.closeCallback != null) {
+                widget.closeCallback!();
+              }
+            },
+            child: Text(widget.closeBtnText))
         ]
       );
   }
@@ -94,6 +126,8 @@ class ProgressManager {
 
 class ProgressController {
   void Function(double, String)? _onEventTriggered;
+  bool Function()? getProgressCloseState;
+  // bool Function()? getProgressCloseState;
 
   // 控制器方法，用于触发事件
   void triggerUpdateProgressEvent(double progress, String progressName) {
@@ -105,5 +139,37 @@ class ProgressController {
   // 绑定组件的事件
   void bindEvent(void Function(double, String) callback) {
     _onEventTriggered = callback;
+  }
+
+  // bool getProgressCloseState() {
+
+  // }
+}
+
+class Debouncer {
+  final Duration delay;
+  Timer? _timer;
+  void Function()? _action;
+
+  Debouncer({required this.delay}) {
+    callback() {
+      if (_action != null) {
+        _action!();
+      }
+      _timer = Timer(delay, callback);
+    };
+
+    callback();
+  }
+
+  void run(void Function() action) {
+    _action = action;
+  }
+
+  void finish() {
+    if (_action != null) {
+      _action!();
+    }
+    _timer?.cancel();
   }
 }

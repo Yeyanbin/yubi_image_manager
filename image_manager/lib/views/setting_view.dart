@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:image_manager/provider/image_provider.dart';
 import 'package:image_manager/provider/setting_provider.dart';
 import 'package:image_manager/utils/emuns.dart';
 import 'package:image_manager/utils/util.dart';
+import 'package:path/path.dart';
 
 // 测试一下UI
 void main() {
@@ -79,17 +81,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         leftAndRightDistance, 16, leftAndRightDistance, 16);
   }
 
-  void _showProgressDialog(context, initCallBack) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return ProgressDialog(
-          updateProgreeController: _progressController,
-          initCallBack: initCallBack
-        );
-      },
-    );
-  }
+  // void _showProgressDialog(context, initCallBack) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return ProgressDialog(
+  //         updateProgreeController: _progressController,
+  //         initCallBack: initCallBack
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -219,14 +221,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           if (_selectedDirectory != null)
                             ElevatedButton(
                               onPressed: () {
-                                _showProgressDialog(context, () {
+                                YubiUtil.showProgressDialog(context, () {
                                   YubiUtil.outputAlbum(
                                     _progressController.triggerUpdateProgressEvent,
                                     ref.read(albumListProvider),
                                     settingData.albumOutputOption,
                                     _selectedDirectory!
                                   );
-                                });
+                                }, _progressController);
 
                               },
                               child: Text('导出'),
@@ -240,7 +242,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     '可以在这里很方便的导出相册中已经选好的照片，',
                     style: descTextStyle,
                   ),
-                  SizedBox(height: 24),
+                  SizedBox(height: 16),
                   Text(
                     '选择导出方式',
                     style: titleTextStyle,
@@ -276,6 +278,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   SizedBox(height: 8),
                   Divider(),
                   SizedBox(height: 16),
+                  buildThumbDataOption(context),
+                  SizedBox(height: 16),
+                  Divider(),
                   // Text(
                   //   '清除配置',
                   //   style: titleTextStyle,
@@ -352,7 +357,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                   SizedBox(height: 12),
                   Text(
-                    '会改变未整理图片和相册中，每一行的网格预览数量。',
+                    '会改变“所有照片”和“相册”中，每一行的网格预览数量。',
                     style: descTextStyle,
                   ),
                 ],
@@ -374,5 +379,127 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               //   ),
               ),
         ));
+  }
+
+  Widget buildThumbDataOption(BuildContext context) {
+    final images = ref.watch(imageProvider);
+    final imageThumbs = ref.watch(imageThumbProvider);
+    final settingDataState = ref.watch(settingDataProvider);
+    final settingData = settingDataState.settingData;
+    final ProgressController _progressController = ProgressController();
+    final selectedFolderPaths = ref.watch(selectedFolderPathsProvider);
+
+    showThumbProgressDialog() {
+      // 生成缓存文件
+      showDialog(
+        context: context,
+        builder: (context) {
+          return ProgressDialog(
+            updateProgreeController: _progressController,
+            initCallBack: () async {
+              await Future.delayed(const Duration(milliseconds: 200));
+              final thumbImageFiles = await YubiUtil.getThumbImages(
+                _progressController,
+                images,
+                selectedFolderPaths,
+                imageThumbs,
+              );
+
+              final thumbImageMap = <String, File>{};
+              thumbImageFiles.forEach((item) {
+                thumbImageMap[basename(item.path)] = item;
+              });
+
+              ref.read(imageThumbProvider.notifier).state = [...thumbImageFiles];
+              ref.read(imageThumbMapProvider.notifier).state = thumbImageMap;
+            },
+            closeBtnText: '关闭',
+          );
+        },
+      );
+    }
+
+    clearThumbDialog() {
+      showDialog(context: context, 
+        builder: (context) {
+          return AlertDialog(
+            title: Text('清除缓存'),
+            content: const SizedBox(
+              height: 200,
+              width: 500,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('是否确认清除所有照片缓存。')
+                    // ElevatedButton(
+                    //   onPressed: _updateProgress,
+                    //   child: const Text('Increase Progress'),
+                    // ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await YubiUtil.clearThumbImages(selectedFolderPaths);
+                  ref.read(imageThumbProvider.notifier).state = [];
+                  ref.read(imageThumbMapProvider.notifier).state = {};
+                  Navigator.of(context).pop();
+                },
+                child: Text('确定清除')),
+              TextButton(onPressed: (){
+                Navigator.of(context).pop();
+              }, child: Text('取消'))
+            ]
+          );
+        }
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, 
+      children: [
+        Text(
+          '缓存数据',
+          style: titleTextStyle,
+        ),
+        SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '已缓存照片：${imageThumbs.length}张。总照片数量：${images.length}张。',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: showThumbProgressDialog,
+                  child: const Text('继续生成缓存文件'),
+                ),
+                const SizedBox(
+                  width: 16,
+                ),
+                ElevatedButton(
+                  onPressed: clearThumbDialog,
+                  child: const Text('清除缓存'),
+                ),
+              ],
+            )
+          ],
+        ),
+        Text(
+          '生成缓存照片可以极大的提升网格照片的预览速度。',
+          style: descTextStyle,
+        )
+      ],
+    );
   }
 }

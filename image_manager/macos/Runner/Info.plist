@@ -28,5 +28,17 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to choose images.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>此应用需要访问您的文档文件夹，以便处理相关文件。</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>此应用需要访问您的桌面文件夹，以便处理相关文件。</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>此应用需要访问您的下载文件夹，以便处理相关文件。</string>
+	<key>NSPicturesFolderUsageDescription</key>
+	<string>此应用需要访问您的图片文件夹，以便处理相关文件。</string>
+	<key>NSMusicFolderUsageDescription</key>
+	<string>此应用需要访问您的音乐文件夹，以便处理相关文件。</string>
 </dict>
 </plist>

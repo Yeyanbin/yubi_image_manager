@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:image_manager/utils/emuns.dart';
+import 'package:image_manager/utils/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingDataStorage {
@@ -42,6 +44,7 @@ class SettingDataStorage {
     print('saveSettingDataByCache historyList：${settingData.historyList}');
     _cacheManager.saveData(key, jsonEncode(settingData.toJson()));
   }
+
 }
 
 class SettingDataModel {

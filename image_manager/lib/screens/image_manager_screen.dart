@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_manager/components/history_list_card.dart';
+import 'package:image_manager/components/progress_dialog.dart';
 import 'package:image_manager/provider/setting_provider.dart';
 import 'package:image_manager/views/setting_view.dart';
 import 'package:image_manager/utils/album_data_storage.dart';
@@ -36,14 +37,15 @@ class ImageManagerScreen extends ConsumerStatefulWidget /* StatefulWidget */ {
 class _ImageManagerScreenState extends ConsumerState {
   // List<File> _images = [];
   // List<String> _selectedFolderPaths = [];
-  
+final ProgressController _progressController = ProgressController();
+
   @override
   void initState() {
     super.initState();
     // ref.read(settingDataProvider.notifier).fetchDataAsync();
   }
 
-  Future<void> _pickFolder() async {
+  Future<void> _pickFolder(context) async {
     // 打开文件夹选择对话框
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     var selectedFolderPaths = ref.watch(selectedFolderPathsProvider);
@@ -61,12 +63,19 @@ class _ImageManagerScreenState extends ConsumerState {
         );
       }
 
-
-      _loadImagesFromFolder(selectedDirectory);
+      YubiUtil.requestPhotoLibraryPermission(
+        () {
+          print('请求权限成功？');
+          _loadImagesFromFolder(selectedDirectory, context);
+        },
+        () {
+          // 拒绝
+        }
+      );
     }
   }
   
-  void _loadImagesFromFolder(String folderPath) {
+  void _loadImagesFromFolder(String folderPath, context) {
     ref
       .read(selectedFolderPathsProvider.notifier)
       .state = folderPath;
@@ -87,10 +96,35 @@ class _ImageManagerScreenState extends ConsumerState {
       // 按拍摄时间排序
       imageFiles.sort((fileA, fileB) => fileA.statSync().modified.compareTo(fileB.statSync().modified));
 
-      // 正确触发状态更新：直接设置新列表
-      ref.read(imageProvider.notifier).state = [
-        ...imageFiles
-      ]; // 或者 imageFiles.toList()
+      // 生成缓存文件
+      showDialog(
+        context: context,
+        builder: (context) {
+          return ProgressDialog(
+            updateProgreeController: _progressController,
+            initCallBack: () async {
+              final thumbImageFiles = await YubiUtil.getThumbImages(
+                _progressController,
+                imageFiles,
+                folderPath
+              );
+
+              // 正确触发状态更新：直接设置新列表
+              ref.read(imageProvider.notifier).state = [
+                ...imageFiles
+              ];
+              final thumbImageMap = Map<String, File>();
+              thumbImageFiles.forEach((item) {
+                thumbImageMap[basename(item.path)] = item;
+              });
+
+              ref.read(imageThumbProvider.notifier).state = thumbImageFiles;
+              ref.read(imageThumbMapProvider.notifier).state = thumbImageMap;
+            },
+            closeBtnText: '关闭',
+          );
+        },
+      );
 
       AlbumDataStorage().readJsonStorage(folderPath).then((resp) {
         print('resp: $resp');
@@ -105,16 +139,6 @@ class _ImageManagerScreenState extends ConsumerState {
           );
           
           return item.toAlbumItem(filteredFiles);
-
-          // return AlbumItem(
-          //   name: item.name, 
-          //   startDate: item.startDate, 
-          //   endDate: item.endDate, 
-          //   images: filteredFiles,
-          //   coverIndex: item.coverIndex,
-          //   createTime: DateTime.now().millisecondsSinceEpoch,
-          //   starFileNames: item.starFileNames.toSet()
-          // );
         }).toList();
 
         ref.read(albumListProvider.notifier).state = albumData;
@@ -135,7 +159,7 @@ class _ImageManagerScreenState extends ConsumerState {
         if (entity is File && _isImageFile(entity.path)) {
           // 如果是图片文件，添加到列表
           imageFiles.add(entity);
-        } else if (entity is Directory) {
+        } else if (entity is Directory && basename(entity.path) != '_thumbData') {
           // 如果是子文件夹，递归调用
           _getImagesRecursively(entity, imageFiles);
         }
@@ -208,7 +232,7 @@ class _ImageManagerScreenState extends ConsumerState {
                   child: IconButton(
                     icon: Icon(Icons.folder_open),
                     iconSize: 100,
-                    onPressed: () => _pickFolder(),
+                    onPressed: () => _pickFolder(context),
                   ),
                 ),
                 Padding(
@@ -224,7 +248,15 @@ class _ImageManagerScreenState extends ConsumerState {
                         historyPathList: historyList,
                         onOpen: (String pathName) {
                           print('historyList onOpen $pathName');
-                          _loadImagesFromFolder(pathName);
+                          YubiUtil.requestPhotoLibraryPermission(
+                            () {
+                              print('请求权限成功？');
+                              _loadImagesFromFolder(pathName, context);
+                            },
+                            () {
+                              // 拒绝
+                            }
+                          );
                         },
                         onClear: () {
                           ref.read(settingDataProvider.notifier).updateSettingData(
@@ -254,17 +286,17 @@ class _ImageManagerScreenState extends ConsumerState {
   }
 
   Widget _bulidImageManagerBody() {
+    final imageThumbs = ref.watch(imageThumbProvider);
     final images = ref.watch(imageProvider);
     final gridImageNumOption = ref.watch(settingDataProvider).settingData.gridImageNumOption;
-
     
     print('_bulidImageManagerBody count: $gridImageNumOption');
     return DefaultTabController(
       length: 3, // 选项卡的数量
       child: Scaffold(
-        appBar: TabBar(
+        appBar: const TabBar(
           tabs: [
-            Tab(icon: Icon(Icons.image), text: '未整理图片'),
+            Tab(icon: Icon(Icons.image), text: '所有照片'),
             Tab(icon: Icon(Icons.directions_transit), text: '相册'),
             Tab(icon: Icon(Icons.settings), text: '设置')
           ],
@@ -273,6 +305,7 @@ class _ImageManagerScreenState extends ConsumerState {
           children: [
             ImageGridView(
                 images: images,
+                thumbImages: imageThumbs,
                 openImagePreview: _openImagePreview,
                 clearFolders: _clearFolders, 
                 gridAxisCount: gridImageNumOption.count

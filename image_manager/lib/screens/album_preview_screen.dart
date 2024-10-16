@@ -42,6 +42,16 @@ class _AlbumPreviewScreenState extends ConsumerState<AlbumPreviewScreen> {
     final albumItem = ref.watch(albumListProvider)[ref.watch(currentAlbumIndexProvider)];
     final images = albumItem.images;
     final gridImageNumOption = ref.watch(settingDataProvider).settingData.gridImageNumOption;
+    final imagethumbMap = ref.watch(imageThumbMapProvider);
+
+    File getThumbImage(File image) {
+      final name = basename(image.path);
+      if (imagethumbMap.containsKey(name)) {
+        return imagethumbMap[name]!;
+      }
+      return image;
+    }
+
 
     return 
       Scaffold(
@@ -63,10 +73,12 @@ class _AlbumPreviewScreenState extends ConsumerState<AlbumPreviewScreen> {
               child: Stack(
             alignment: Alignment.topRight, // 将图标对齐到右上角
             children: [
-              Image.file(images[index], 
-              height: double.maxFinite,
-              width: double.maxFinite,
-              fit: BoxFit.cover),
+              Image.file(
+                getThumbImage(images[index]), 
+                height: double.maxFinite,
+                width: double.maxFinite,
+                fit: BoxFit.cover
+              ),
               if (albumItem.starFileNames.contains(basename(images[index].path)))
                 const Positioned(
                   top: 8, // 设置图标的边距

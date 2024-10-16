@@ -43,6 +43,8 @@ dependencies:
   path: ^1.8.0 # 路径工具
   flutter_riverpod: ^2.0.0  # 状态管理工具
   shared_preferences: ^2.0.0 # 数据持久化工具
+  flutter_image_compress: ^2.3.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

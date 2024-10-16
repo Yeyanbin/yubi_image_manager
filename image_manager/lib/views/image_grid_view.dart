@@ -6,14 +6,24 @@ class ImageGridView extends StatelessWidget {
   final List<File> images;
   final Function() clearFolders;
   final int gridAxisCount;
+  final List<File> thumbImages;
 
   const ImageGridView({
     super.key,
     required this.gridAxisCount,
     required this.openImagePreview,
     required this.images,
+    required this.thumbImages,
     required this.clearFolders,
   });
+
+  File getImage(int index) {
+    if (thumbImages.length > index) {
+      return thumbImages[index];
+    } else {
+      return images[index];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +40,7 @@ class ImageGridView extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () => openImagePreview(index, context),
-              child: Image.file(images[index], fit: BoxFit.cover),
+              child: Image.file(getImage(index), fit: BoxFit.cover),
             );
           },
         ),

@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_manager/utils/album_data_storage.dart';
 
 final imageProvider = StateProvider<List<File>>((ref) => []);
+final imageThumbProvider = StateProvider<List<File>>((ref) => []);
+final imageThumbMapProvider = StateProvider<Map<String, File>>((ref) => {});
+
 final currentIndexProvider = StateProvider<int>((ref) => 0);
 final selectedFolderPathsProvider = StateProvider<String>((ref) => '');
 
