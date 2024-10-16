@@ -357,7 +357,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                   SizedBox(height: 12),
                   Text(
-                    '会改变“所有照片”和“相册”中，每一行的网格预览数量。',
+                    '会改变“所有照片”和“行程相册”中，每一行的网格预览数量。',
                     style: descTextStyle,
                   ),
                 ],

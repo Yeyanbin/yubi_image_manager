@@ -297,7 +297,7 @@ final ProgressController _progressController = ProgressController();
         appBar: const TabBar(
           tabs: [
             Tab(icon: Icon(Icons.image), text: '所有照片'),
-            Tab(icon: Icon(Icons.directions_transit), text: '相册'),
+            Tab(icon: Icon(Icons.directions_transit), text: '行程'),
             Tab(icon: Icon(Icons.settings), text: '设置')
           ],
         ),

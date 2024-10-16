@@ -49,3 +49,8 @@ flutter run
 ### v1.1
 
 - [演示视频](https://www.bilibili.com/video/BV1nCxteBEXz/) 新增文件夹历史卡片，整理了一下目录结构
+
+### v1.2
+
+增加照片缓存功能，生成较小的缩略图到本地，极大提高了预览时图库的加载速度。
+使用了 flutter_image_compress 进行图片压缩，在打开文件夹或者设置页可以缓存。
