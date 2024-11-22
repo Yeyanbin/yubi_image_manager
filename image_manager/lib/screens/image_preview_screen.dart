@@ -103,61 +103,61 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(
-                '$imageName  ${currentIndex + 1} / ${images.length}'),
-            const SizedBox(
-              width: 12,
-            ),
-            if (widget.isAlbum)
-              StarButton(
-                value: isStarSet.contains(imageName),
-                text: '收藏',
-                hoverText: '已收藏',
-                onTap: () {
-                  // Mark一下
-                  print('收藏 ${basename(images[currentIndex].path)}');
+          children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(
+                  '$imageName  ${currentIndex + 1} / ${images.length}'),
+              const SizedBox(
+                width: 12,
+              ),
+              if (widget.isAlbum)
+                StarButton(
+                  value: isStarSet.contains(imageName),
+                  text: '收藏',
+                  hoverText: '已收藏',
+                  onTap: () {
+                    // Mark一下
+                    print('收藏 ${basename(images[currentIndex].path)}');
+                    
+                    if (!isStarSet.contains(imageName)) {
+                      isStarSet.add(imageName);
+                    } else {
+                      isStarSet.remove(imageName);
+                    }
+                    AlbumDataStorage().updateAlbumList(ref.read(albumListProvider));
+                    setState(() {
+                      // 触发一下收藏按钮样式更新
+                      isStarSet = isStarSet;
+                    });
                   
-                  if (!isStarSet.contains(imageName)) {
-                    isStarSet.add(imageName);
-                  } else {
-                    isStarSet.remove(imageName);
-                  }
-                  AlbumDataStorage().updateAlbumList(ref.read(albumListProvider));
-                  setState(() {
-                    // 触发一下收藏按钮样式更新
-                    isStarSet = isStarSet;
-                  });
-                
-                  YubiUtil.showTopMessage(context, '操作成功');
-                  print('目前已收藏：${isStarSet.toList()}');
+                    YubiUtil.showTopMessage(context, '操作成功');
+                    print('目前已收藏：${isStarSet.toList()}');
+                  },
+                ),
+              // SizedBox(width: 12,),
+            ]),
+            if (widget.isAlbum)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 8), // 按钮的内边距
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // 设置圆角半径
+                    )),
+                child: const Text('将该照片设为封面'),
+                onPressed: () {
+                  // currentIndex
+                  print('更改封面 $currentIndex');
+                  final currentAlbumIndex = ref.read(currentAlbumIndexProvider);
+                  final albumList = ref.read(albumListProvider);
+                  albumList[currentAlbumIndex].coverIndex = currentIndex;
+                  // albumData = albumList;
+                  AlbumDataStorage().updateAlbumList(albumList);
+                  ref.read(albumListProvider.notifier).state = [...albumList];
+                  YubiUtil.showTopMessage(context, '成功将照片${imageName}设为封面。');
                 },
               ),
-            // SizedBox(width: 12,),
-          ]),
-          if (widget.isAlbum)
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 8), // 按钮的内边距
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8), // 设置圆角半径
-                  )),
-              child: const Text('将该照片设为封面'),
-              onPressed: () {
-                // currentIndex
-                print('更改封面 $currentIndex');
-                final currentAlbumIndex = ref.read(currentAlbumIndexProvider);
-                final albumList = ref.read(albumListProvider);
-                albumList[currentAlbumIndex].coverIndex = currentIndex;
-                // albumData = albumList;
-                AlbumDataStorage().updateAlbumList(albumList);
-                ref.read(albumListProvider.notifier).state = [...albumList];
-                YubiUtil.showTopMessage(context, '成功将照片${imageName}设为封面。');
-              },
-            ),
-        ],
+          ],
       )),
       body: RawKeyboardListener(
         focusNode: FocusNode()..requestFocus(),
